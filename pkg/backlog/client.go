@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/jparound30/createReviewRecordSheet/internal/config"
@@ -47,17 +48,39 @@ type PullRequest struct {
 
 // Comment represents a Backlog comment
 type Comment struct {
-	ID          int         `json:"id"`
-	Content     string      `json:"content"`
-	CreatedUser User        `json:"createdUser"`
-	Created     time.Time   `json:"created"`
-	ChangeLog   []ChangeLog `json:"changeLog"`
+	ID            int           `json:"id"`
+	OldBlobID     *string       `json:"oldBlobId"`
+	NewBlobID     *string       `json:"newBlobId"`
+	FilePath      *string       `json:"filePath"`
+	Position      *int          `json:"position"`
+	Content       string        `json:"content"`
+	ChangeLog     []ChangeLog   `json:"changeLog"`
+	CreatedUser   User          `json:"createdUser"`
+	Created       time.Time     `json:"created"`
+	Updated       time.Time     `json:"updated"`
+	Stars         []interface{} `json:"stars"`
+	Notifications []interface{} `json:"notifications"`
+}
+
+// NulabAccount represents Nulab account information
+type NulabAccount struct {
+	NulabID  string `json:"nulabId"`
+	Name     string `json:"name"`
+	UniqueID string `json:"uniqueId"`
+	IconURL  string `json:"iconUrl"`
 }
 
 // User represents a Backlog user
 type User struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+	ID            int          `json:"id"`
+	UserID        string       `json:"userId"`
+	Name          string       `json:"name"`
+	RoleType      int          `json:"roleType"`
+	Lang          string       `json:"lang"`
+	MailAddress   string       `json:"mailAddress"`
+	NulabAccount  NulabAccount `json:"nulabAccount"`
+	Keyword       string       `json:"keyword"`
+	LastLoginTime string       `json:"lastLoginTime"`
 }
 
 // ChangeLog represents a change in a comment
@@ -167,13 +190,15 @@ func (c *Client) GetComments(projectID int, repoID int, pullRequestID int) ([]Co
 	}
 	defer resp.Body.Close()
 
+	body, _ := io.ReadAll(resp.Body)
+	fmt.Printf("Response body: %s\n", string(body))
+
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
 		return nil, fmt.Errorf("error getting comments: %s, status code: %d", string(body), resp.StatusCode)
 	}
 
 	var comments []Comment
-	if err := json.NewDecoder(resp.Body).Decode(&comments); err != nil {
+	if err := json.NewDecoder(strings.NewReader(string(body))).Decode(&comments); err != nil {
 		return nil, fmt.Errorf("error decoding comments: %w", err)
 	}
 
@@ -182,18 +207,10 @@ func (c *Client) GetComments(projectID int, repoID int, pullRequestID int) ([]Co
 
 // GetCommentLocation extracts the location information from a comment
 func (c *Client) GetCommentLocation(comment Comment) string {
-	// Default location is "全体" (whole)
-	location := "全体"
-
-	// Check if there's location information in the comment
-	for _, change := range comment.ChangeLog {
-		if change.Field == "file" {
-			location = change.NewValue
-			break
-		}
+	if comment.FilePath == nil || comment.Position == nil {
+		return "全体"
 	}
-
-	return location
+	return fmt.Sprintf("%s: %d行目", *comment.FilePath, *comment.Position)
 }
 
 // FormatDate formats a time.Time as yyyy/mm/dd

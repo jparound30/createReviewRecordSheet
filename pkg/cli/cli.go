@@ -10,13 +10,13 @@ import (
 	"github.com/jparound30/createReviewRecordSheet/pkg/backlog"
 )
 
-// CLI represents the command-line interface
+// CLI はコマンドラインインターフェースを表します
 type CLI struct {
 	reader *bufio.Reader
 	client *backlog.Client
 }
 
-// NewCLI creates a new CLI
+// NewCLI は新しいCLIを作成します
 func NewCLI(client *backlog.Client) *CLI {
 	return &CLI{
 		reader: bufio.NewReader(os.Stdin),
@@ -24,9 +24,9 @@ func NewCLI(client *backlog.Client) *CLI {
 	}
 }
 
-// SelectProject prompts the user to select a project
+// SelectProject はユーザーにプロジェクトを選択するよう促します
 func (c *CLI) SelectProject() (*backlog.Project, error) {
-	// Get projects
+	// プロジェクトを取得
 	projects, err := c.client.GetProjects()
 	if err != nil {
 		return nil, fmt.Errorf("error getting projects: %w", err)
@@ -36,27 +36,27 @@ func (c *CLI) SelectProject() (*backlog.Project, error) {
 		return nil, fmt.Errorf("no projects found")
 	}
 
-	// Display projects
+	// プロジェクトを表示
 	fmt.Println("Available projects:")
 	for i, project := range projects {
 		fmt.Printf("%d. %s\n", i+1, project.Name)
 	}
 
-	// Prompt user to select a project
+	// ユーザーにプロジェクトの選択を促す
 	fmt.Print("Select a project (enter number): ")
 	input, err := c.reader.ReadString('\n')
 	if err != nil {
 		return nil, fmt.Errorf("error reading input: %w", err)
 	}
 
-	// Parse input
+	// 入力を解析
 	input = strings.TrimSpace(input)
 	index, err := strconv.Atoi(input)
 	if err != nil {
 		return nil, fmt.Errorf("invalid input: %w", err)
 	}
 
-	// Validate input
+	// 入力を検証
 	if index < 1 || index > len(projects) {
 		return nil, fmt.Errorf("invalid project number: %d", index)
 	}
@@ -64,9 +64,9 @@ func (c *CLI) SelectProject() (*backlog.Project, error) {
 	return &projects[index-1], nil
 }
 
-// SelectRepository prompts the user to select a repository
+// SelectRepository はユーザーにリポジトリを選択するよう促します
 func (c *CLI) SelectRepository(projectID int) (*backlog.Repository, error) {
-	// Get repositories
+	// リポジトリを取得
 	repositories, err := c.client.GetRepositories(projectID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting repositories: %w", err)
@@ -76,27 +76,27 @@ func (c *CLI) SelectRepository(projectID int) (*backlog.Repository, error) {
 		return nil, fmt.Errorf("no repositories found for the selected project")
 	}
 
-	// Display repositories
+	// リポジトリを表示
 	fmt.Println("Available repositories:")
 	for i, repo := range repositories {
 		fmt.Printf("%d. %s\n", i+1, repo.Name)
 	}
 
-	// Prompt user to select a repository
+	// ユーザーにリポジトリの選択を促す
 	fmt.Print("Select a repository (enter number): ")
 	input, err := c.reader.ReadString('\n')
 	if err != nil {
 		return nil, fmt.Errorf("error reading input: %w", err)
 	}
 
-	// Parse input
+	// 入力を解析
 	input = strings.TrimSpace(input)
 	index, err := strconv.Atoi(input)
 	if err != nil {
 		return nil, fmt.Errorf("invalid input: %w", err)
 	}
 
-	// Validate input
+	// 入力を検証
 	if index < 1 || index > len(repositories) {
 		return nil, fmt.Errorf("invalid repository number: %d", index)
 	}
@@ -104,9 +104,9 @@ func (c *CLI) SelectRepository(projectID int) (*backlog.Repository, error) {
 	return &repositories[index-1], nil
 }
 
-// SelectPullRequest prompts the user to select a pull request
+// SelectPullRequest はユーザーにプルリクエストを選択するよう促します
 func (c *CLI) SelectPullRequest(projectID int, repoID int) (*backlog.PullRequest, error) {
-	// Get pull requests
+	// プルリクエストを取得
 	pullRequests, err := c.client.GetPullRequests(projectID, repoID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting pull requests: %w", err)
@@ -116,27 +116,27 @@ func (c *CLI) SelectPullRequest(projectID int, repoID int) (*backlog.PullRequest
 		return nil, fmt.Errorf("no pull requests found for the selected repository")
 	}
 
-	// Display pull requests
+	// プルリクエストを表示
 	fmt.Println("Available pull requests:")
 	for i, pr := range pullRequests {
 		fmt.Printf("%d. %s\n", i+1, pr.Summary)
 	}
 
-	// Prompt user to select a pull request
+	// ユーザーにプルリクエストの選択を促す
 	fmt.Print("Select a pull request (enter number): ")
 	input, err := c.reader.ReadString('\n')
 	if err != nil {
 		return nil, fmt.Errorf("error reading input: %w", err)
 	}
 
-	// Parse input
+	// 入力を解析
 	input = strings.TrimSpace(input)
 	index, err := strconv.Atoi(input)
 	if err != nil {
 		return nil, fmt.Errorf("invalid input: %w", err)
 	}
 
-	// Validate input
+	// 入力を検証
 	if index < 1 || index > len(pullRequests) {
 		return nil, fmt.Errorf("invalid pull request number: %d", index)
 	}

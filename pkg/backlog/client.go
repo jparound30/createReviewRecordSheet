@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/jparound30/createReviewRecordSheet/internal/config"
@@ -198,7 +197,7 @@ func (c *Client) GetComments(projectID int, repoID int, pullRequestID int) ([]Co
 	}
 
 	var comments []Comment
-	if err := json.NewDecoder(strings.NewReader(string(body))).Decode(&comments); err != nil {
+	if err := json.Unmarshal(body, &comments); err != nil {
 		return nil, fmt.Errorf("error decoding comments: %w", err)
 	}
 

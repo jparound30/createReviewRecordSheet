@@ -51,6 +51,23 @@ func (g *Generator) GenerateCommentSheet(
 	f.SetColWidth(sheetName, "C", "C", 15)
 	f.SetColWidth(sheetName, "D", "D", 100)
 
+	// Create a style with top alignment and text wrapping
+	style, err := f.NewStyle(&excelize.Style{
+		Alignment: &excelize.Alignment{
+			Vertical: "top",
+			WrapText: true,
+		},
+	})
+	if err != nil {
+		return "", fmt.Errorf("error creating cell style: %w", err)
+	}
+
+	// Apply the style to all cells in the sheet
+	err = f.SetCellStyle(sheetName, "A1", fmt.Sprintf("D%d", len(comments)+1), style)
+	if err != nil {
+		return "", fmt.Errorf("error applying cell style: %w", err)
+	}
+
 	// Add comments
 	for i, comment := range comments {
 		row := i + 2 // Start from row 2 (after headers)
